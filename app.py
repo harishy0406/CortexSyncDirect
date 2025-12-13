@@ -69,8 +69,15 @@ class WorkflowResponse(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    """Serve the main HTML interface"""
+    """Serve the landing page"""
     with open("index.html", "r", encoding="utf-8") as f:
+        return f.read()
+
+
+@app.get("/validate", response_class=HTMLResponse)
+async def validate_page():
+    """Serve the validation page"""
+    with open("validate.html", "r", encoding="utf-8") as f:
         return f.read()
 
 

@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validate Provider - CortexSync Direct</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary-color: #3b82f6;
+            --accent-color: #60a5fa;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --bg-light: #f9fafb;
+            --white: #ffffff;
+            --border-color: #e5e7eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--white);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active {
+            color: var(--primary-color);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-color);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            font-size: 1.2rem;
+            color: var(--text-light);
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 0.5rem;
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            background: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid var(--bg-light);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1.25rem;
+            border-radius: 25px;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .status-verified {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .status-flagged {
+            background: var(--error);
+            color: var(--white);
+        }
+
+        .status-pending {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .confidence-score {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .confidence-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            min-width: 120px;
+            color: var(--text-dark);
+        }
+
+        .confidence-bar {
+            flex: 1;
+            height: 35px;
+            background: var(--bg-light);
+            border-radius: 18px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid var(--border-color);
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--error) 0%, var(--warning) 50%, var(--success) 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .workflow-steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 2rem 0;
+            position: relative;
+            padding: 1rem 0;
+        }
+
+        .workflow-steps::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--border-color);
+            z-index: 0;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--bg-light);
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.75rem;
+            font-weight: 700;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+            border: 3px solid var(--border-color);
+        }
+
+        .step.active .step-circle {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 20px rgba(30, 64, 175, 0.4);
+        }
+
+        .step.completed .step-circle {
+            background: var(--success);
+            color: var(--white);
+            border-color: var(--success);
+        }
+
+        .step-label {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .step.active .step-label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .step.completed .step-label {
+            color: var(--success);
+        }
+
+        .data-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .data-card {
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+            background: var(--bg-light);
+        }
+
+        .data-card h3 {
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .data-field {
+            margin: 0.75rem 0;
+            padding: 0.75rem;
+            background: var(--white);
+            border-radius: 6px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .data-field label {
+            font-weight: 600;
+            color: var(--text-light);
+            display: block;
+            margin-bottom: 0.25rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-field value {
+            color: var(--text-dark);
+            display: block;
+            font-size: 1rem;
+        }
+
+        .discrepancies {
+            margin-top: 2rem;
+        }
+
+        .discrepancies h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .discrepancy-item {
+            background: #fef3c7;
+            border-left: 4px solid var(--warning);
+            padding: 1.25rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+        }
+
+        .discrepancy-item h4 {
+            color: #92400e;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .discrepancy-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .discrepancy-value {
+            padding: 0.75rem;
+            background: var(--white);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .discrepancy-value.db {
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .discrepancy-value.scraped {
+            border-left: 3px solid var(--error);
+        }
+
+        .discrepancy-value strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .message {
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid var(--success);
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid var(--error);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-dark);
+            color: var(--white);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--white);
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+        }
+
+        .footer-bottom {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .data-comparison {
+                grid-template-columns: 1fr;
+            }
+
+            .workflow-steps {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+
+            .step {
+                min-width: 100px;
+            }
+
+            .nav-links {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .page-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">CortexSync Direct</a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/#how-it-works">How It Works</a></li>
+                <li><a href="/#contact">Contact Us</a></li>
+                <li><a href="/validate" class="active">Validate</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h1>Provider Data Validation</h1>
+                <p>AI-Powered Autonomous Validation System</p>
+            </div>
+
+            <div class="card">
+                <h2>Validate Provider Data</h2>
+                <div class="input-section">
+                    <div class="form-group">
+                        <label for="providerId">Provider ID</label>
+                        <input 
+                            type="number" 
+                            id="providerId" 
+                            placeholder="Enter provider ID (e.g., 1001, 2001, 3001)" 
+                            value="1001"
+                        >
+                        <small>
+                            Try: 1001-1003 (High confidence), 2001-2002 (Medium), 3001-3002 (Low), 4001 (Perfect match)
+                        </small>
+                    </div>
+                    <button class="btn" id="validateBtn" onclick="validateProvider()">
+                        Validate Provider
+                    </button>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="color: var(--text-light); margin-top: 1rem;">Running validation workflow...</p>
+            </div>
+
+            <div class="card results-section" id="resultsSection">
+                <h2>Validation Results</h2>
+                <div id="message"></div>
+                
+                <div id="statusBadge"></div>
+                
+                <div class="confidence-score">
+                    <span class="confidence-text">Confidence Score:</span>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="confidenceFill"></div>
+                    </div>
+                </div>
+
+                <div class="workflow-steps" id="workflowSteps">
+                    <div class="step" id="step1">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">Fetch DB</div>
+                    </div>
+                    <div class="step" id="step2">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">Scrape Web</div>
+                    </div>
+                    <div class="step" id="step3">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">QA Check</div>
+                    </div>
+                    <div class="step" id="step4">
+                        <div class="step-circle">4</div>
+                        <div class="step-label" id="step4Label">Action</div>
+                    </div>
+                </div>
+
+                <div class="data-comparison">
+                    <div class="data-card">
+                        <h3>📊 Database Data</h3>
+                        <div id="dbData"></div>
+                    </div>
+                    <div class="data-card">
+                        <h3>🌐 Scraped Data</h3>
+                        <div id="scrapedData"></div>
+                    </div>
+                </div>
+
+                <div class="discrepancies" id="discrepanciesSection"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="/">Home</a>
+                <a href="/#how-it-works">How It Works</a>
+                <a href="/#contact">Contact Us</a>
+                <a href="/validate">Validate</a>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 CortexSync Direct. All rights reserved.</p>
+                <p style="margin-top: 0.5rem;">Autonomous Provider Directory Management System</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        async function validateProvider() {
+            const providerId = document.getElementById('providerId').value;
+            const validateBtn = document.getElementById('validateBtn');
+            const loading = document.getElementById('loading');
+            const resultsSection = document.getElementById('resultsSection');
+            const messageDiv = document.getElementById('message');
+
+            if (!providerId) {
+                alert('Please enter a provider ID');
+                return;
+            }
+
+            // Reset UI
+            validateBtn.disabled = true;
+            loading.classList.add('show');
+            resultsSection.classList.remove('show');
+            messageDiv.innerHTML = '';
+            resetWorkflowSteps();
+
+            try {
+                const response = await fetch('/api/validate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ provider_id: parseInt(providerId) })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                displayResults(data);
+
+            } catch (error) {
+                messageDiv.innerHTML = `
+                    <div class="message error">
+                        Error: ${error.message}
+                    </div>
+                `;
+                resultsSection.classList.add('show');
+            } finally {
+                validateBtn.disabled = false;
+                loading.classList.remove('show');
+            }
+        }
+
+        function resetWorkflowSteps() {
+            for (let i = 1; i <= 4; i++) {
+                const step = document.getElementById(`step${i}`);
+                step.classList.remove('active', 'completed');
+            }
+        }
+
+        function displayResults(data) {
+            const resultsSection = document.getElementById('resultsSection');
+            const messageDiv = document.getElementById('message');
+            const statusBadge = document.getElementById('statusBadge');
+            const confidenceFill = document.getElementById('confidenceFill');
+            const dbDataDiv = document.getElementById('dbData');
+            const scrapedDataDiv = document.getElementById('scrapedData');
+            const discrepanciesSection = document.getElementById('discrepanciesSection');
+            const step4Label = document.getElementById('step4Label');
+
+            // Show results
+            resultsSection.classList.add('show');
+
+            // Status badge
+            const statusClass = data.status === 'verified' ? 'status-verified' : 
+                               data.status === 'flagged' ? 'status-flagged' : 'status-pending';
+            statusBadge.innerHTML = `
+                <span class="status-badge ${statusClass}">
+                    Status: ${data.status.toUpperCase()}
+                </span>
+            `;
+
+            // Message
+            messageDiv.innerHTML = `
+                <div class="message ${data.status === 'verified' ? 'success' : 'error'}">
+                    ${data.message}
+                </div>
+            `;
+
+            // Confidence score
+            confidenceFill.style.width = `${data.confidence_score}%`;
+            confidenceFill.textContent = `${data.confidence_score}%`;
+
+            // Workflow steps
+            resetWorkflowSteps();
+            data.workflow_steps.forEach((step, index) => {
+                const stepNum = index + 1;
+                const stepElement = document.getElementById(`step${stepNum}`);
+                if (stepElement) {
+                    stepElement.classList.add('completed');
+                }
+            });
+            
+            // Update step 4 label based on final action
+            if (data.workflow_steps.includes('update_db')) {
+                step4Label.textContent = 'Update DB';
+            } else {
+                step4Label.textContent = 'Flag Review';
+            }
+
+            // Display data
+            dbDataDiv.innerHTML = formatData(data.current_db_data);
+            scrapedDataDiv.innerHTML = formatData(data.scraped_data);
+
+            // Display discrepancies
+            if (data.discrepancies && data.discrepancies.length > 0) {
+                discrepanciesSection.innerHTML = `
+                    <h3>⚠️ Data Discrepancies Found</h3>
+                    ${data.discrepancies.map(disc => `
+                        <div class="discrepancy-item">
+                            <h4>Field: ${disc.field}</h4>
+                            <div class="discrepancy-comparison">
+                                <div class="discrepancy-value db">
+                                    <strong>Database:</strong>
+                                    ${disc.db_value}
+                                </div>
+                                <div class="discrepancy-value scraped">
+                                    <strong>Scraped:</strong>
+                                    ${disc.scraped_value}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+            } else {
+                discrepanciesSection.innerHTML = `
+                    <div class="message success">
+                        ✅ No discrepancies found. Data matches perfectly!
+                    </div>
+                `;
+            }
+        }
+
+        function formatData(data) {
+            if (!data || Object.keys(data).length === 0) {
+                return '<p style="color: var(--text-light);">No data available</p>';
+            }
+            return Object.entries(data).map(([key, value]) => `
+                <div class="data-field">
+                    <label>${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</label>
+                    <value>${value || 'N/A'}</value>
+                </div>
+            `).join('');
+        }
+
+        // Allow Enter key to trigger validation
+        document.getElementById('providerId').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                validateProvider();
+            }
+        });
+    </script>
+</body>
+</html>
+
