@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provider Directory Management - Autonomous Validation System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .input-section {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .workflow-steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .workflow-steps::before {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-circle {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .step.completed .step-circle {
+            background: #4caf50;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .step.active .step-label {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .status-verified {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status-flagged {
+            background: #f44336;
+            color: white;
+        }
+
+        .status-pending {
+            background: #ff9800;
+            color: white;
+        }
+
+        .confidence-score {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .confidence-bar {
+            flex: 1;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f44336 0%, #ff9800 50%, #4caf50 100%);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .confidence-text {
+            font-size: 1.2em;
+            font-weight: 600;
+            min-width: 80px;
+        }
+
+        .data-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .data-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .data-card h3 {
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .data-field {
+            margin: 10px 0;
+            padding: 8px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .data-field label {
+            font-weight: 600;
+            color: #666;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .data-field value {
+            color: #333;
+            display: block;
+        }
+
+        .discrepancies {
+            margin-top: 20px;
+        }
+
+        .discrepancy-item {
+            background: #fff3cd;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .discrepancy-item h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .discrepancy-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .discrepancy-value {
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+        }
+
+        .discrepancy-value.db {
+            border-left: 3px solid #667eea;
+        }
+
+        .discrepancy-value.scraped {
+            border-left: 3px solid #f44336;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #4caf50;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #f44336;
+        }
+
+        @media (max-width: 768px) {
+            .data-comparison {
+                grid-template-columns: 1fr;
+            }
+
+            .workflow-steps {
+                flex-wrap: wrap;
+            }
+
+            .step {
+                min-width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Provider Directory Management</h1>
+            <p>Autonomous AI-Powered Data Validation System</p>
+        </div>
+
+        <div class="card">
+            <h2>Validate Provider Data</h2>
+            <div class="input-section">
+                <div class="form-group">
+                    <label for="providerId">Provider ID</label>
+                    <input 
+                        type="number" 
+                        id="providerId" 
+                        placeholder="Enter provider ID (e.g., 1001, 2001, 3001)" 
+                        value="1001"
+                    >
+                    <small style="display: block; margin-top: 5px; color: #666; font-size: 0.9em;">
+                        Try: 1001-1003 (High confidence), 2001-2002 (Medium), 3001-3002 (Low), 4001 (Perfect match)
+                    </small>
+                </div>
+                <button class="btn" id="validateBtn" onclick="validateProvider()">
+                    Validate Provider
+                </button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Running validation workflow...</p>
+        </div>
+
+        <div class="card results-section" id="resultsSection">
+            <h2>Validation Results</h2>
+            <div id="message"></div>
+            
+            <div id="statusBadge"></div>
+            
+            <div class="confidence-score">
+                <span class="confidence-text">Confidence:</span>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidenceFill"></div>
+                </div>
+            </div>
+
+            <div class="workflow-steps" id="workflowSteps">
+                <div class="step" id="step1">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Fetch DB</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Scrape Web</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">QA Check</div>
+                </div>
+                <div class="step" id="step4">
+                    <div class="step-circle">4</div>
+                    <div class="step-label" id="step4Label">Action</div>
+                </div>
+            </div>
+
+            <div class="data-comparison">
+                <div class="data-card">
+                    <h3>📊 Database Data</h3>
+                    <div id="dbData"></div>
+                </div>
+                <div class="data-card">
+                    <h3>🌐 Scraped Data</h3>
+                    <div id="scrapedData"></div>
+                </div>
+            </div>
+
+            <div class="discrepancies" id="discrepanciesSection"></div>
+        </div>
+    </div>
+
+    <script>
+        async function validateProvider() {
+            const providerId = document.getElementById('providerId').value;
+            const validateBtn = document.getElementById('validateBtn');
+            const loading = document.getElementById('loading');
+            const resultsSection = document.getElementById('resultsSection');
+            const messageDiv = document.getElementById('message');
+
+            if (!providerId) {
+                alert('Please enter a provider ID');
+                return;
+            }
+
+            // Reset UI
+            validateBtn.disabled = true;
+            loading.classList.add('show');
+            resultsSection.classList.remove('show');
+            messageDiv.innerHTML = '';
+            resetWorkflowSteps();
+
+            try {
+                const response = await fetch('/api/validate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ provider_id: parseInt(providerId) })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                displayResults(data);
+
+            } catch (error) {
+                messageDiv.innerHTML = `
+                    <div class="message error">
+                        Error: ${error.message}
+                    </div>
+                `;
+                resultsSection.classList.add('show');
+            } finally {
+                validateBtn.disabled = false;
+                loading.classList.remove('show');
+            }
+        }
+
+        function resetWorkflowSteps() {
+            for (let i = 1; i <= 4; i++) {
+                const step = document.getElementById(`step${i}`);
+                step.classList.remove('active', 'completed');
+            }
+        }
+
+        function displayResults(data) {
+            const resultsSection = document.getElementById('resultsSection');
+            const messageDiv = document.getElementById('message');
+            const statusBadge = document.getElementById('statusBadge');
+            const confidenceFill = document.getElementById('confidenceFill');
+            const dbDataDiv = document.getElementById('dbData');
+            const scrapedDataDiv = document.getElementById('scrapedData');
+            const discrepanciesSection = document.getElementById('discrepanciesSection');
+            const step4Label = document.getElementById('step4Label');
+
+            // Show results
+            resultsSection.classList.add('show');
+
+            // Status badge
+            const statusClass = data.status === 'verified' ? 'status-verified' : 
+                               data.status === 'flagged' ? 'status-flagged' : 'status-pending';
+            statusBadge.innerHTML = `
+                <span class="status-badge ${statusClass}">
+                    Status: ${data.status.toUpperCase()}
+                </span>
+            `;
+
+            // Message
+            messageDiv.innerHTML = `
+                <div class="message ${data.status === 'verified' ? 'success' : 'error'}">
+                    ${data.message}
+                </div>
+            `;
+
+            // Confidence score
+            confidenceFill.style.width = `${data.confidence_score}%`;
+            confidenceFill.textContent = `${data.confidence_score}%`;
+
+            // Workflow steps
+            resetWorkflowSteps();
+            data.workflow_steps.forEach((step, index) => {
+                const stepNum = index + 1;
+                const stepElement = document.getElementById(`step${stepNum}`);
+                if (stepElement) {
+                    stepElement.classList.add('completed');
+                }
+            });
+            
+            // Update step 4 label based on final action
+            if (data.workflow_steps.includes('update_db')) {
+                step4Label.textContent = 'Update DB';
+            } else {
+                step4Label.textContent = 'Flag Review';
+            }
+
+            // Display data
+            dbDataDiv.innerHTML = formatData(data.current_db_data);
+            scrapedDataDiv.innerHTML = formatData(data.scraped_data);
+
+            // Display discrepancies
+            if (data.discrepancies && data.discrepancies.length > 0) {
+                discrepanciesSection.innerHTML = `
+                    <h3>⚠️ Data Discrepancies Found</h3>
+                    ${data.discrepancies.map(disc => `
+                        <div class="discrepancy-item">
+                            <h4>Field: ${disc.field}</h4>
+                            <div class="discrepancy-comparison">
+                                <div class="discrepancy-value db">
+                                    <strong>Database:</strong><br>
+                                    ${disc.db_value}
+                                </div>
+                                <div class="discrepancy-value scraped">
+                                    <strong>Scraped:</strong><br>
+                                    ${disc.scraped_value}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+            } else {
+                discrepanciesSection.innerHTML = `
+                    <div class="message success">
+                        ✅ No discrepancies found. Data matches perfectly!
+                    </div>
+                `;
+            }
+        }
+
+        function formatData(data) {
+            if (!data || Object.keys(data).length === 0) {
+                return '<p>No data available</p>';
+            }
+            return Object.entries(data).map(([key, value]) => `
+                <div class="data-field">
+                    <label>${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</label>
+                    <value>${value || 'N/A'}</value>
+                </div>
+            `).join('');
+        }
+
+        // Allow Enter key to trigger validation
+        document.getElementById('providerId').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                validateProvider();
+            }
+        });
+    </script>
+</body>
+</html>
+
