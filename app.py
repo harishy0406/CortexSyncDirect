@@ -4,10 +4,12 @@ FastAPI Backend for Autonomous Provider Directory Management System
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Dict, Any
 import uvicorn
+import os
 from orchestrator import create_workflow_graph, AgentState
 
 
@@ -149,6 +151,26 @@ async def validate_provider(request: ProviderRequest):
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "service": "Provider Directory Management API"}
+
+
+@app.get("/tab.png")
+async def favicon_png():
+    """Serve the favicon as PNG"""
+    if os.path.exists("tab.png"):
+        return FileResponse("tab.png", media_type="image/png")
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
+
+@app.get("/favicon.ico")
+async def favicon_ico():
+    """Serve the favicon as ICO (browser default request)"""
+    if os.path.exists("tab.png"):
+        return FileResponse("tab.png", media_type="image/png")
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
+
+# Mount static files directory (for any other static assets)
+# app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # ============================================================================
