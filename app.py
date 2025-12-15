@@ -169,6 +169,14 @@ async def favicon_ico():
     raise HTTPException(status_code=404, detail="Favicon not found")
 
 
+@app.get("/Hero_img.png")
+async def hero_image():
+    """Serve the hero image"""
+    if os.path.exists("Hero_img.png"):
+        return FileResponse("Hero_img.png", media_type="image/png")
+    raise HTTPException(status_code=404, detail="Hero image not found")
+
+
 # Mount static files directory (for any other static assets)
 # app.mount("/static", StaticFiles(directory="static"), name="static")
 

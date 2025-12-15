@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CortexSyncDirect - Autonomous Provider Directory Management</title>
+    <title>CortexSyncDirect</title>
     <!-- Favicon / Tab Icon -->
     <link rel="icon" type="image/png" href="tab.png">
     <link rel="shortcut icon" type="image/png" href="tab.png">
@@ -97,14 +97,13 @@
 
         /* Hero Section */
         .hero {
-            /* Option 1: Use background image - Replace 'hero-image.jpg' with your image path */
-            /* background-image: url('hero-image.jpg'); */
-            /* background-size: cover; */
-            /* background-position: center; */
-            /* background-repeat: no-repeat; */
-            
-            /* Option 2: Keep gradient background (current) */
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            /* Hero background image with gradient overlay */
+            background-image: linear-gradient(135deg, rgba(30, 64, 175, 0.7) 0%, rgba(59, 130, 246, 0.7) 100%), url('Hero_img.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            /* Fallback gradient if image doesn't load */
+            background-color: #1e40af;
             
             min-height: 100vh;
             display: flex;
@@ -115,7 +114,7 @@
             margin-top: 70px;
         }
 
-        /* Overlay to darken image if using background image */
+        /* Overlay to darken image for text readability */
         .hero::before {
             content: '';
             position: absolute;
@@ -123,12 +122,8 @@
             left: 0;
             right: 0;
             bottom: 0;
-            /* Pattern overlay - comment out if using background image */
-            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
-            opacity: 0.3;
-            
-            /* Uncomment below if using background image for dark overlay */
-            /* background: rgba(30, 64, 175, 0.6); */
+            /* Additional dark overlay for better text readability (optional - gradient already provides overlay) */
+            /* background: rgba(0, 0, 0, 0.2); */
             /* opacity: 1; */
         }
 
