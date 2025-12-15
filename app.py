@@ -72,7 +72,7 @@ class WorkflowResponse(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 async def root():
     """Serve the landing page"""
-    with open("index.html", "r", encoding="utf-8") as f:
+    with open("landing.html", "r", encoding="utf-8") as f:
         return f.read()
 
 
