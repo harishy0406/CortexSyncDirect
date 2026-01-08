@@ -30,11 +30,9 @@ class AgentState(TypedDict):
     confidence_score: int  # 0-100
     status: Literal['pending', 'verified', 'flagged']
 
-
 # ============================================================================
 # Mock Data Providers (Indian Healthcare Providers)
 # ============================================================================
-
 def get_mock_provider_data(provider_id: int) -> dict:
     """
     Returns mock provider data based on provider_id.
