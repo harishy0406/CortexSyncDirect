@@ -38,7 +38,6 @@ def get_workflow_graph():
         workflow_graph = create_workflow_graph()
     return workflow_graph
 
-
 # ============================================================================
 # Request/Response Models
 # ============================================================================
